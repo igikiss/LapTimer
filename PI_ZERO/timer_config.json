@@ -1,0 +1,52 @@
+{
+    "mqtt": {
+        "host": "localhost",
+        "port": 1883,
+        "client_id": "pumptrack_timer_001",
+        "username": null,
+        "password": null,
+        "publish_interval": 2.0,
+        "topics": {
+            "lap_time": "pumptrack/lap",
+            "status": "pumptrack/status",
+            "statistics": "pumptrack/stats",
+            "health": "pumptrack/health"
+        }
+    },
+    "lidar": {
+        "port": "/dev/ttyS0",           // Pi Zero 2W UART port
+        "baudrate": 115200,             // TF-Luna standard speed
+        "timeout": 1.0,                 // Read timeout
+        "min_strength": 100,            // Signal quality filter
+        "max_distance": 1200,           // Distance limit (cm)
+        "max_reading_age": 0.5          // Freshness requirement
+    },
+    "web": {
+        "host": "0.0.0.0",
+        "port": 5000,
+        "max_laps": 10
+    },
+    "logging": {
+        "level": "WARNING",
+        "file": "/var/log/lap_timer.log",
+        "max_size": "10MB"
+    },
+    "lap_timer": {
+        "min_crossing_distance": 10,
+        "max_crossing_distance": 400,
+        "min_lap_time": 5.0,
+        "reset_delay": 5.0,
+        "crossing_debounce": 0.3,
+        "state_names": {
+            "idle": "🏁 Ready",
+            "waiting_for_first_crossing": "⏳ Waiting for Racer",
+            "timing_lap": "⏱️ Timing Lap",
+            "waiting_for_next_racer": "🚴 Next Racer"
+        }
+    },
+    "led_display": {
+        "pin": "D18",                   // GPIO 18 for LEDs
+        "num_pixels": 25,               // 5x5 matrix
+        "brightness": 0.3               // 30% brightness
+    }
+}

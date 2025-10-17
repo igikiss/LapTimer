@@ -1,0 +1,19 @@
+# Web server dependencies
+flask>=2.0.0
+werkzeug>=2.0.0
+
+# MQTT communication
+paho-mqtt>=1.6.0
+
+# LED display dependencies
+adafruit-circuitpython-neopixel>=6.0.0
+adafruit-blinka>=8.0.0
+
+# Optional: For better hardware support on Raspberry Pi
+# rpi_ws281x>=4.3.0  # Only install on Raspberry Pi, not macOS
+
+# Data handling
+numpy>=1.20.0  # If you plan to add more complex LED animations
+
+# System utilities (usually included with Python)
+# time, logging, threading, json - built-in modules

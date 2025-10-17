@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏁 Pumptrack Race Timer</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .content {
+            padding: 25px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            background: #343a40;
+            color: white;
+            padding: 15px 20px;
+            margin: 0;
+            font-size: 1.3em;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th, td { 
+            padding: 12px 15px; 
+            text-align: left; 
+            border-bottom: 1px solid #eee;
+        }
+        
+        th { 
+            background: #007bff;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-running { background: #28a745; }
+        .status-stopped { background: #dc3545; }
+        .status-healthy { background: #28a745; }
+        .status-unhealthy { background: #dc3545; }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .big-time {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .refresh-info {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        
+        .control-buttons {
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            margin: 8px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-start { background: #28a745; color: white; }
+        .btn-stop { background: #dc3545; color: white; }
+        .btn-reset { background: #ffc107; color: #212529; }
+        
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .alert-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .alert-danger { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .alert-warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header h1 { font-size: 2em; }
+            .content { padding: 15px; }
+            th, td { padding: 8px 10px; font-size: 0.9em; }
+            .big-time { font-size: 2em; }
+            .btn { padding: 10px 20px; margin: 5px; font-size: 0.9em; }
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            z-index: 1000;
+        }
+        
+        .connected { background: #28a745; color: white; }
+        .disconnected { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div id="connection-status" class="connection-status connected">🟢 Connected</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🏁 Pumptrack Race Timer</h1>
+        </div>
+        
+        <div class="content">
+            <!-- Control Buttons -->
+            <div class="control-buttons">
+                <button class="btn btn-start" onclick="startRace()">🏁 Start Race</button>
+                <button class="btn btn-stop" onclick="stopRace()">🛑 Stop Race</button>
+                <button class="btn btn-reset" onclick="resetLap()">🔄 Reset Lap</button>
+            </div>
+            
+            <!-- Current Lap Time Display -->
+            <div class="section">
+                <h2 class="section-header">⏱️ Current Lap</h2>
+                <div class="section-content">
+                    <div class="big-time" id="big-lap-time">Ready to Race</div>
+                    <div class="refresh-info" id="current-state-display">
+                        <span class="status-indicator" id="state-indicator"></span>
+                        <span id="current_state">{{ status.current_state if status else 'Initializing...' }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Race Status -->
+            <div class="section">
+                <h2 class="section-header">📊 Race Status</h2>
+                <div class="section-content">
+                    <table>
+                        <tr>
+                            <th>Status</th>
+                            <td>
+                                <span class="status-indicator" id="running-indicator"></span>
+                                <span id="running">{{ 'Racing' if status and status.running else 'Stopped' }}</span>
+                            </td>
+                        </tr>
+                        <tr><th>Total Laps</th><td id="total_laps">{{ status.total_laps if status else '0' }}</td></tr>
+                        <tr><th>Total DNFs</th><td id="total_dnf">{{ status.total_dnf if status else '0' }}</td></tr>
+                        <tr><th>Best Lap</th><td id="best_lap">{{ (status.best_lap|round(3) ~ ' s') if status and status.best_lap else 'N/A' }}</td></tr>
+                        <tr><th>Reset Remaining</th><td id="reset_remaining">{{ (status.reset_remaining|round(1) ~ ' s') if status and status.reset_remaining else 'N/A' }}</td></tr>
+                        <tr><th>Last Lap</th><td id="last_lap_status">{{ status.last_lap_status if status else 'N/A' }}</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- LIDAR Status -->
+            <div class="section">
+                <h2 class="section-header">📡 LIDAR Status</h2>
+                <div class="section-content">
+                    <table>
+                        <tr>
+                            <th>Health</th>
+                            <td>
+                                <span class="status-indicator" id="lidar-indicator"></span>
+                                <span id="lidar_healthy">{{ 'Healthy' if status and status.lidar_healthy else 'Unhealthy' }}</span>
+                            </td>
+                        </tr>
+                        <tr><th>Current Distance</th><td id="current_distance">{{ (status.current_distance ~ ' cm') if status and status.current_distance else 'N/A' }}</td></tr>
+                        <tr><th>Status Message</th><td id="lidar_status_message">{{ status.lidar_status_message if status else 'Initializing...' }}</td></tr>
+                        <tr><th>Connection Failures</th><td id="connection_failures">{{ status.connection_failures if status else '0' }}</td></tr>
+                        <tr><th>Reading Failures</th><td id="reading_failures">{{ status.reading_failures if status else '0' }}</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Race Statistics -->
+            <div class="section">
+                <h2 class="section-header">📈 Race Statistics</h2>
+                <div class="section-content">
+                    <table>
+                        <tr><th>Total Attempts</th><td id="total_attempts">{{ stats.total_attempts if stats else '0' }}</td></tr>
+                        <tr><th>Completed Laps</th><td id="completed_laps">{{ stats.completed_laps if stats else '0' }}</td></tr>
+                        <tr><th>DNF Count</th><td id="dnf_count">{{ stats.dnf_count if stats else '0' }}</td></tr>
+                        <tr><th>Completion Rate</th><td id="completion_rate">{{ (stats.completion_rate|round(1) ~ '%') if stats else '0%' }}</td></tr>
+                        <tr><th>Average Lap</th><td id="average_lap">{{ (stats.average_lap|round(3) ~ ' s') if stats and stats.average_lap else 'N/A' }}</td></tr>
+                        <tr><th>Total Race Time</th><td id="total_race_time">{{ (stats.total_race_time|round(1) ~ ' s') if stats else '0 s' }}</td></tr>
+                        <tr><th>Recent Laps</th><td id="last_5_laps">{{ (stats.last_5_laps|map('round', 3)|join(', ') ~ ' s') if stats and stats.last_5_laps else 'N/A' }}</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Lap Results -->
+            <div class="section">
+                <h2 class="section-header">🏆 Lap Results</h2>
+                <div class="section-content">
+                    <table id="lap-results-table">
+                        <thead>
+                            <tr><th>Lap #</th><th>Time</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% if lap_results %}
+                                {% for time, status in lap_results[-10:] %}
+                                <tr>
+                                    <td>{{ loop.revindex }}</td>
+                                    <td>{{ (time|round(3) ~ ' s') if time else 'DNF' }}</td>
+                                    <td>
+                                        {% if status == 'Completed' %}
+                                            ✅ {{ status }}
+                                        {% else %}
+                                            ❌ {{ status }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="3" style="text-align: center; color: #6c757d;">No laps recorded yet</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="refresh-info">
+                    🔄 Auto-refreshing every second | Last update: <span id="last-update">{{ moment().format('HH:mm:ss') if moment else 'Loading...' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let connectionOk = true;
+        let lastUpdateTime = Date.now();
+
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connection-status');
+            if (connected && connectionOk) {
+                statusEl.textContent = '🟢 Connected';
+                statusEl.className = 'connection-status connected';
+            } else {
+                statusEl.textContent = '🔴 Connection Lost';
+                statusEl.className = 'connection-status disconnected';
+            }
+        }
+
+        function updateBigTime(data) {
+            const bigTimeEl = document.getElementById('big-lap-time');
+            const stateEl = document.getElementById('current_state');
+            const stateIndicator = document.getElementById('state-indicator');
+
+            if (data.current_lap_time && data.current_lap_time > 0) {
+                bigTimeEl.textContent = data.current_lap_time.toFixed(1) + ' s';
+                bigTimeEl.style.color = data.current_lap_time > 45 ? '#dc3545' : '#007bff';
+            } else if (data.reset_remaining && data.reset_remaining > 0) {
+                bigTimeEl.textContent = 'Reset: ' + data.reset_remaining.toFixed(1) + ' s';
+                bigTimeEl.style.color = '#ffc107';
+            } else {
+                bigTimeEl.textContent = data.current_state || 'Ready to Race';
+                bigTimeEl.style.color = '#28a745';
+            }
+
+            // Update state indicator
+            if (data.running) {
+                stateIndicator.className = 'status-indicator status-running';
+            } else {
+                stateIndicator.className = 'status-indicator status-stopped';
+            }
+        }
+
+        function updateIndicators(data) {
+            // Running indicator
+            const runningIndicator = document.getElementById('running-indicator');
+            if (runningIndicator) {
+                runningIndicator.className = data.running ? 
+                    'status-indicator status-running' : 'status-indicator status-stopped';
+            }
+
+            // LIDAR indicator
+            const lidarIndicator = document.getElementById('lidar-indicator');
+            if (lidarIndicator) {
+                lidarIndicator.className = data.lidar_healthy ? 
+                    'status-indicator status-healthy' : 'status-indicator status-unhealthy';
+            }
+        }
+
+        function refreshStatus() {
+            fetch('/api/status')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    connectionOk = true;
+                    updateConnectionStatus(true);
+                    lastUpdateTime = Date.now();
+
+                    // Update all status fields
+                    document.getElementById('current_state').textContent = data.current_state || 'N/A';
+                    document.getElementById('running').textContent = data.running ? 'Racing' : 'Stopped';
+                    document.getElementById('total_laps').textContent = data.total_laps || '0';
+                    document.getElementById('total_dnf').textContent = data.total_dnf || '0';
+                    document.getElementById('best_lap').textContent = data.best_lap ? data.best_lap.toFixed(3) + ' s' : 'N/A';
+                    document.getElementById('reset_remaining').textContent = data.reset_remaining ? data.reset_remaining.toFixed(1) + ' s' : 'N/A';
+                    document.getElementById('last_lap_status').textContent = data.last_lap_status || 'N/A';
+                    
+                    // LIDAR status
+                    document.getElementById('lidar_healthy').textContent = data.lidar_healthy ? 'Healthy' : 'Unhealthy';
+                    document.getElementById('current_distance').textContent = data.current_distance ? data.current_distance + ' cm' : 'N/A';
+                    document.getElementById('lidar_status_message').textContent = data.lidar_status_message || 'N/A';
+                    document.getElementById('connection_failures').textContent = data.connection_failures || '0';
+                    document.getElementById('reading_failures').textContent = data.reading_failures || '0';
+
+                    // Statistics (if available)
+                    if (data.statistics) {
+                        const stats = data.statistics;
+                        document.getElementById('total_attempts').textContent = stats.total_attempts || '0';
+                        document.getElementById('completed_laps').textContent = stats.completed_laps || '0';
+                        document.getElementById('dnf_count').textContent = stats.dnf_count || '0';
+                        document.getElementById('completion_rate').textContent = stats.completion_rate ? stats.completion_rate.toFixed(1) + '%' : '0%';
+                        document.getElementById('average_lap').textContent = stats.average_lap ? stats.average_lap.toFixed(3) + ' s' : 'N/A';
+                        document.getElementById('total_race_time').textContent = stats.total_race_time ? stats.total_race_time.toFixed(1) + ' s' : '0 s';
+                        document.getElementById('last_5_laps').textContent = stats.last_5_laps && stats.last_5_laps.length ? 
+                            stats.last_5_laps.map(t => t.toFixed(3) + ' s').join(', ') : 'N/A';
+                    }
+
+                    // Update big time display and indicators
+                    updateBigTime(data);
+                    updateIndicators(data);
+
+                    // Update last update time
+                    document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                })
+                .catch(error => {
+                    console.error('Error fetching status:', error);
+                    connectionOk = false;
+                    updateConnectionStatus(false);
+                });
+        }
+
+        // Control functions
+        function startRace() {
+            fetch('/api/start', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('Race started successfully!', 'success');
+                    } else {
+                        showAlert('Failed to start race: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting race:', error);
+                    showAlert('Error starting race. Check connection.', 'danger');
+                });
+        }
+
+        function stopRace() {
+            if (confirm('Are you sure you want to stop the race?')) {
+                fetch('/api/stop', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showAlert('Race stopped successfully!', 'warning');
+                        } else {
+                            showAlert('Failed to stop race: ' + data.message, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error stopping race:', error);
+                        showAlert('Error stopping race. Check connection.', 'danger');
+                    });
+            }
+        }
+
+        function resetLap() {
+            if (confirm('Reset the current lap?')) {
+                fetch('/api/reset', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showAlert('Lap reset successfully!', 'success');
+                        } else {
+                            showAlert('Failed to reset lap: ' + data.message, 'warning');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error resetting lap:', error);
+                        showAlert('Error resetting lap. Check connection.', 'danger');
+                    });
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const container = document.querySelector('.content');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Start auto-refresh
+        setInterval(refreshStatus, 1000); // Refresh every second
+        
+        // Initial load
+        refreshStatus();
+
+        // Check for stale data
+        setInterval(() => {
+            if (Date.now() - lastUpdateTime > 5000) {
+                updateConnectionStatus(false);
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
