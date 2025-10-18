@@ -1,8 +1,18 @@
-import serial
 import logging
 import time
 from threading import Thread, Event, Lock
 from typing import Tuple, Optional, Dict
+
+# Handle serial import gracefully
+try:
+    import serial
+    from serial import SerialException
+    SERIAL_AVAILABLE = True
+except ImportError:
+    serial = None  # type: ignore
+    SerialException = Exception  # Fallback
+    SERIAL_AVAILABLE = False
+    logging.warning("PySerial not available - running in simulation mode")
 
 class LidarSensor:
     """
@@ -81,7 +91,7 @@ class LidarSensor:
                 self.logger.info(f"LiDAR connected on {self.serial_port.name}")
                 return True
                 
-            except serial.SerialException as e:
+            except SerialException as e:
                 self.logger.warning(f"Connection attempt {attempt + 1} failed: {str(e)}")
                 if self.serial_port:
                     self.serial_port.close()
@@ -154,7 +164,7 @@ class LidarSensor:
             self.logger.debug("No valid data within timeout")
             return None, None, None
         
-        except serial.SerialException as e:
+        except SerialException as e:
             self.logger.error(f"Serial error: {str(e)}")
             if self.serial_port is not None:
                 self.serial_port.close()

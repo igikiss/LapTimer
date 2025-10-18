@@ -1,7 +1,7 @@
 import time
 import logging
 import math
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, TYPE_CHECKING
 
 # Handle platform-specific imports gracefully
 try:
@@ -9,6 +9,8 @@ try:
     import neopixel
     HARDWARE_AVAILABLE = True
 except ImportError:
+    board = None  # type: ignore
+    neopixel = None  # type: ignore
     HARDWARE_AVAILABLE = False
     logging.warning("Hardware libraries not available - running in simulation mode")
 

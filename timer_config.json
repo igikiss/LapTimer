@@ -14,12 +14,12 @@
         }
     },
     "lidar": {
-        "port": "/dev/ttyS0",           // Pi Zero 2W UART port
-        "baudrate": 115200,             // TF-Luna standard speed
-        "timeout": 1.0,                 // Read timeout
-        "min_strength": 100,            // Signal quality filter
-        "max_distance": 1200,           // Distance limit (cm)
-        "max_reading_age": 0.5          // Freshness requirement
+        "port": "/dev/ttyS0",
+        "baudrate": 115200,
+        "timeout": 1.0,
+        "min_strength": 100,
+        "max_distance": 1200,
+        "max_reading_age": 0.5
     },
     "web": {
         "host": "0.0.0.0",
@@ -45,8 +45,8 @@
         }
     },
     "led_display": {
-        "pin": "D18",                   // GPIO 18 for LEDs
-        "num_pixels": 25,               // 5x5 matrix
-        "brightness": 0.3               // 30% brightness
+        "pin": "D18",
+        "num_pixels": 25,
+        "brightness": 0.3
     }
 }
