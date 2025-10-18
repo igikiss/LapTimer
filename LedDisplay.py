@@ -1,12 +1,12 @@
 import time
 import logging
-import board
-import neopixel
 import math
 from typing import Optional, List, Tuple
 
 # Handle platform-specific imports gracefully
 try:
+    import board
+    import neopixel
     HARDWARE_AVAILABLE = True
 except ImportError:
     HARDWARE_AVAILABLE = False
