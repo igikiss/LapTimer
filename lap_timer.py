@@ -78,20 +78,31 @@ class LapTimer:
         Start the race, initializing the sensor and clearing previous data.
         """
         with self.__class__._lock:
-            if not self.lidar_sensor.is_connected():
-                logging.error("Cannot start race: LIDAR not connected")
-                return False
-            if not hasattr(self.lidar_sensor, 'get_health_status'):
-                logging.error("Cannot start race: LIDAR missing get_health_status method")
-                return False
-            health = self.lidar_sensor.get_health_status()
-            if not health['healthy']:
-                logging.error(f"Cannot start race: LIDAR unhealthy ({health['status_message']})")
-                return False
-            if not self.lidar_sensor.is_running:
-                if not self.lidar_sensor.start_continuous_reading():
-                    logging.error("Failed to start LIDAR continuous reading")
+            # Check if LIDAR is in simulation mode
+            simulation_mode = getattr(self.lidar_sensor, 'simulation_mode', False)
+            
+            if not simulation_mode:
+                # Only check LIDAR health if not in simulation mode
+                if not self.lidar_sensor.is_connected():
+                    logging.error("Cannot start race: LIDAR not connected")
                     return False
+                if not hasattr(self.lidar_sensor, 'get_health_status'):
+                    logging.error("Cannot start race: LIDAR missing get_health_status method")
+                    return False
+                health = self.lidar_sensor.get_health_status()
+                if not health['healthy']:
+                    logging.error(f"Cannot start race: LIDAR unhealthy ({health['status_message']})")
+                    return False
+                if not self.lidar_sensor.is_running:
+                    if not self.lidar_sensor.start_continuous_reading():
+                        logging.error("Failed to start LIDAR continuous reading")
+                        return False
+            else:
+                # In simulation mode, just mark as running
+                logging.info("Starting race in simulation mode")
+                if not self.lidar_sensor.is_running:
+                    self.lidar_sensor.start_continuous_reading()
+                    
             if not self.is_running:
                 self.is_running = True
                 self.lap_times.clear()
