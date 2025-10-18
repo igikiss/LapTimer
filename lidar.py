@@ -35,6 +35,7 @@ class LidarSensor:
                           'max_distance', 'max_reading_age'
         """
         self.config = config
+        self.simulation_mode = not SERIAL_AVAILABLE
         self.serial_port = None
         self.is_running = False
         self.current_distance = None  # Distance in cm
@@ -54,7 +55,10 @@ class LidarSensor:
         # )
         self.logger = logging.getLogger(__name__)
         
-        self.setup_serial_port()
+        if self.simulation_mode:
+            self.logger.info("LiDAR running in simulation mode (no hardware)")
+        else:
+            self.setup_serial_port()
 
     def setup_serial_port(self) -> bool:
         """Initialize or reinitialize the serial connection with retries."""
@@ -212,6 +216,11 @@ class LidarSensor:
 
     def start_continuous_reading(self) -> bool:
         """Start the continuous reading thread."""
+        if self.simulation_mode:
+            self.logger.info("LiDAR running in simulation mode - no continuous reading needed")
+            self.is_running = True
+            return True
+            
         if not self.is_connected():
             self.logger.error("Cannot start: LiDAR not connected")
             return False
@@ -243,6 +252,10 @@ class LidarSensor:
         Returns:
             Tuple of (distance_cm, signal_strength, temperature_c, timestamp)
         """
+        if self.simulation_mode:
+            # Return simulated data for testing
+            return (None, None, None, 0)
+            
         with self.data_lock:
             return (
                 self.current_distance,
@@ -268,6 +281,20 @@ class LidarSensor:
                 - healthy: bool, whether sensor is operational
                 - status_message: str, reason for unhealthy status if applicable
         """
+        if self.simulation_mode:
+            return {
+                'connected': False,
+                'running': self.is_running,
+                'last_reading_age': 0,
+                'current_distance': None,
+                'signal_strength': None,
+                'temperature': None,
+                'connection_failures': 0,
+                'reading_failures': 0,
+                'healthy': True,
+                'status_message': 'Simulation mode - no hardware'
+            }
+            
         with self.data_lock:
             time_since_last_reading = time.time() - self.last_reading_time
             lidar_config = self.config.get('lidar', {})
