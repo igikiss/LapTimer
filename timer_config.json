@@ -28,7 +28,7 @@
     },
     "logging": {
         "level": "WARNING",
-        "file": "/var/log/lap_timer.log",
+        "file": "logs/lap_timer.log",
         "max_size": "10MB"
     },
     "lap_timer": {
