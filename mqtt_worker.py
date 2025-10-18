@@ -81,7 +81,8 @@ class MQTTWorker:
     def connect(self) -> bool:
         """Connect to MQTT broker."""
         try:
-            self.client = mqtt.Client(self.client_id)
+            # Use callback_api_version parameter for paho-mqtt 2.0+
+            self.client = mqtt.Client(client_id=self.client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION1)
             self.client.on_connect = self._on_connect
             self.client.on_disconnect = self._on_disconnect
             self.client.on_publish = self._on_publish
