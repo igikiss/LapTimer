@@ -8,6 +8,7 @@ import logging
 import signal
 import sys
 import time
+import os
 from config import Config
 from lidar import LidarSensor
 from lap_timer import LapTimer
@@ -18,13 +19,28 @@ from LedDisplay import LEDDisplay  # New import for LED display
 def setup_logging(config):
     """Configure logging based on config settings."""
     log_config = config.get('logging', {})
+    log_file = log_config.get('file', 'logs/lap_timer.log')
+    
+    # Ensure log directory exists
+    log_dir = os.path.dirname(log_file)
+    if log_dir and not os.path.exists(log_dir):
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+        except Exception as e:
+            print(f"Warning: Could not create log directory {log_dir}: {e}")
+            log_file = 'lap_timer.log'  # Fallback to current directory
+    
+    # Try to create file handler, fallback if permission denied
+    handlers = [logging.StreamHandler(sys.stdout)]
+    try:
+        handlers.append(logging.FileHandler(log_file))
+    except PermissionError:
+        print(f"Warning: No permission to write to {log_file}, logging to console only")
+    
     logging.basicConfig(
         level=getattr(logging, log_config.get('level', 'INFO')),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_config.get('file', '/tmp/lap_timer.log')),
-            logging.StreamHandler(sys.stdout)
-        ]
+        handlers=handlers
     )
 
 def signal_handler(signum, frame):
