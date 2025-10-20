@@ -83,17 +83,14 @@ class MQTTWorker:
         try:
             # Handle both old and new paho-mqtt API versions
             try:
-                # Check if CallbackAPIVersion exists (paho-mqtt 2.0+)
-                if hasattr(mqtt, 'CallbackAPIVersion'):
-                    self.client = mqtt.Client(
-                        client_id=self.client_id, 
-                        callback_api_version=mqtt.CallbackAPIVersion.VERSION1
-                    )
-                else:
-                    # For paho-mqtt < 2.0
+                # Create the client using keyword if supported, otherwise fall back to positional arg
+                try:
+                    self.client = mqtt.Client(client_id=self.client_id)
+                except TypeError:
+                    # Older paho-mqtt versions may not accept keyword args
                     self.client = mqtt.Client(self.client_id)
-            except (TypeError, AttributeError):
-                # Fallback for older versions
+            except Exception:
+                # Final fallback if anything unexpected happens
                 self.client = mqtt.Client(self.client_id)
                 
             self.client.on_connect = self._on_connect
