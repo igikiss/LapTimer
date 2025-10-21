@@ -105,6 +105,7 @@ def critical_function():
 
 # Print summary periodically
 import threading
+import time
 
 def print_stats_periodically():
     while True:
