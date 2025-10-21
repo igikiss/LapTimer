@@ -156,7 +156,7 @@ class LidarSensor:
                             if self._validate_checksum(full_data):
                                 distance = data[0] + (data[1] << 8)
                                 strength = data[2] + (data[3] << 8)
-                                temp = 20
+                                temp = (data[4] + (data[5] << 8)) / 100  # Corrected temperature
                                 min_strength = self.config.get('lidar', {}).get('min_strength', 100)
                                 max_distance = self.config.get('lidar', {}).get('max_distance', 1200)
                                 if strength >= min_strength and distance < max_distance:
