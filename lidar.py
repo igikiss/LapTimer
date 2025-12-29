@@ -9,7 +9,8 @@ try:
     from serial import SerialException
     SERIAL_AVAILABLE = True
 except ImportError:
-    serial = None  # type: ignore
+    import types
+    serial = types.ModuleType("serial")  # type: ignore[assignment]
     SerialException = Exception  # Fallback
     SERIAL_AVAILABLE = False
     logging.warning("PySerial not available - running in simulation mode")
